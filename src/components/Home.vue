@@ -3,14 +3,14 @@
     <!-- 头部区域 -->
     <el-header>
       <div class="header-div">
-        <img src="../../assets/logo4.jpg" alt="" />
+        <img src="../assets/logo4.jpg" alt="" />
         <span class="header-div-text">后台管理系统</span>
       </div>
       <el-button type="info" @click="logout">退出</el-button>
     </el-header>
     <el-container>
       <!-- 左边区域 -->
-      <el-aside :width="isCallapse ? '200px' : '64px'">
+      <el-aside :width="isCallapse ? '64px' : '200px'">
         <!-- 点击收起菜单按钮 -->
         <div class="menucallapse" @click="menuCallapse">|||</div>
         <!-- 左侧菜单 -->
@@ -19,8 +19,10 @@
           text-color="#fff"
           active-text-color="#409BFF"
           unique-opened
-          :collapse="!isCallapse"
+          :collapse-transition="false"
+          :collapse="isCallapse"
           router
+          :default-active= "activePath"
         >
           <!-- 动态数据绑定id，保证每个元素都是独立的 -->
           <el-submenu
@@ -29,13 +31,14 @@
             :key="item.id"
           >
             <template slot="title">
-              <i class="el-icon-location"></i>
+              <i :class="iconsObj[item.id]"></i>
               <span>{{ item.authName }}</span>
             </template>
             <el-menu-item
               :index="'/'+subitem.path"
               v-for="subitem in item.children"
               :key="subitem.id"
+              @click="saveNavState('/' + subitem.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -56,12 +59,21 @@
 export default {
   created() {
     this.getMenuList();
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   name: "Home",
   data() {
     return {
       menuList: [],
-      isCallapse:true
+      isCallapse:false,
+      activePath: '',
+      iconsObj: {
+        100: 'iconfont icon-user',
+        103: 'iconfont icon-tijikongjian',
+        200: 'iconfont icon-shangpin',
+        300: 'iconfont icon-danju',
+        145: 'iconfont icon-baobiao',
+      },
     };
   },
   methods: {
@@ -72,7 +84,7 @@ export default {
     async getMenuList() {
     //   const res = await this.$http.get("menus");
     //   this.menuList = res.data.data;
-        this.menuList = [
+        this.menuList = this.menuList = [
             { 
                 id: 100, authName: '用户管理', path: 'users', 
                 children: [
@@ -91,16 +103,21 @@ export default {
                     { id: 301, authName: '订单列表', path: 'orders', }
                 ]
             },
-        ];
+        ]
     },
     menuCallapse(){
       this.isCallapse=!this.isCallapse
+    },
+     // 保存链接的激活状态
+    saveNavState(activePath) {
+      window.sessionStorage.setItem('activePath', activePath)
+      this.activePath = activePath
     }
   },
 };
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .container {
   height: 100%;
 }
@@ -118,18 +135,24 @@ export default {
   align-items: center;
 }
 .header-div img {
-  height: 60px;
+    height: 60px;
 }
 .header-div-text {
   margin-left: 15px;
 }
 .el-aside {
   background-color: #373d41;
+  .el-menu {
+    border-right: none;
+  }
 }
 .menucallapse{
-  color: #fff;
-  text-align: center;
-  letter-spacing: 0.2em;
-  cursor: pointer;
+    background-color: #4a5064;
+    font-size: 10px;
+    line-height: 24px;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.2em;
+    cursor: pointer;  
 }
 </style>

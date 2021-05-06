@@ -1,6 +1,16 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+// 这样引入实现路由懒加载
+const Login = () => import(/* webpackChunkName: "login_home_welcome" */ '@/components/Login.vue')
+const Home = () => import(/* webpackChunkName: "login_home_welcome" */ '@/components/Home.vue')
+const Welcome = () => import(/* webpackChunkName: "login_home_welcome" */ '@/components/Welcome.vue')
+
+const Users = () => import(/* webpackChunkName: "Users_Rights_Roles" */ '@/components/User/user.vue')
+
+const GoodsList = () => import(/* webpackChunkName: "GoodsList_Add" */ '@/components/Goods/list.vue')
+
+const Order = () => import(/* webpackChunkName: "Order_Report" */ '@/components/Order/order.vue')
 Vue.use(VueRouter)
 
 const routes = [
@@ -10,11 +20,24 @@ const routes = [
     },
     {
         path:'/login',
-        component:()=>import('../components/Login.vue'),
+        component: Login,
     },
     {
         path:'/home',
-        component:()=>import('../components/Home/Home.vue'),
+        component: Home,
+        redirect: '/welcome',
+        children: [
+            { path: '/welcome', component: Welcome },
+            { path: '/users', component: Users },
+            // { path: '/rights', component: Rights },
+            // { path: '/roles', component: Roles },
+            // { path: '/categories', component: Cate },
+            // { path: '/params', component: Params },
+            { path: '/goods', component: GoodsList },
+            // { path: '/goods/add', component: Add },
+            { path: '/orders', component: Order },
+            // { path: '/reports', component: Report },
+        ]
     },
   ]
 
