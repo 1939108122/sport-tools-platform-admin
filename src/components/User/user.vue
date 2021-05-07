@@ -23,10 +23,9 @@
     </el-row>
     <!-- 用户列表区域 -->
     <el-table :data="userlist" stripe border>
-      <el-table-column type="index" label="#"></el-table-column>
-      <el-table-column prop="username" label="姓名"></el-table-column>
+      <el-table-column prop="userName" label="姓名"></el-table-column>
       <el-table-column prop="password" label="密码"></el-table-column>
-      <el-table-column prop="mobile" label="电话"></el-table-column>
+      <el-table-column prop="userPhoneNumber" label="电话"></el-table-column>
       <el-table-column label="操作" width="180px">
         <template slot-scope="scope">
           <!-- 修改按钮 -->
@@ -54,14 +53,14 @@
       <!-- 内容主体区域 -->
       <el-form :model="addForm" :rules="addFormRules" 
       ref="addFormRef" label-width="70px">
-        <el-form-item label="用户名" prop="username">
-        <el-input v-model="addForm.username"></el-input>
+        <el-form-item label="用户名" prop="userName">
+        <el-input v-model="addForm.userName"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
         <el-input v-model="addForm.password"></el-input>
         </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-        <el-input v-model="addForm.mobile"></el-input>
+        <el-form-item label="手机" prop="userPhoneNumber">
+        <el-input v-model="addForm.userPhoneNumber"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -98,16 +97,49 @@
 <script>
 export default {
   data() {
-    //验证邮箱的规则
-  var checkEmail = (rule, value, cb) => {
-      // 验证邮箱的正则表达式
-    const regEmail = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/
-      if (regEmail.test(value))
-      {
-        return cb()
-      }
-    cb(new Error('请输入合法的邮箱！'))
-  }
+    // 用户名的校验方法
+    let validateName = (rule, value, callback) => {
+        if (!value) {
+            return callback(new Error("请输入用户名"));
+        }
+        // 用户名以字母开头,长度在5-16之间,允许字母数字下划线
+        const userNameRule = /^[a-zA-Z][a-zA-Z0-9_]{4,15}$/;
+        if (userNameRule.test(value)) {
+            //判断数据库中是否已经存在该用户名
+            this.$http({
+                method: 'POST',
+                url: 'default/user/find',
+                data: {
+                    userName: this.addForm.userName
+                } 
+            }).then(({data}) => {
+                if (data.code == '001')
+                {
+                    return callback();
+                }
+                else {
+                    return callback(new Error(data.msg));
+                }
+            })
+        } else {
+            return callback(new Error("字母开头,长度5-16之间,允许字母数字下划线"));
+        }
+    };
+    // 密码的校验方法
+    let validatePass = (rule, value, callback) => {
+        if (value === "") {
+            return callback(new Error("请输入密码"));
+        }
+        // 密码以字母开头,长度在6-18之间,允许字母数字和下划线
+        const passwordRule = /^[a-zA-Z]\w{5,17}$/;
+        if (passwordRule.test(value)) {
+            return callback();
+        } else {
+            return callback(
+            new Error("字母开头,长度6-18之间,允许字母数字和下划线")
+            );
+        }
+    };
   // 验证手机号的规则
     var checkMobile = (rule, value, cb) => {
     // 验证手机号的正则表达式
@@ -125,7 +157,7 @@ export default {
         // 当前的页数
         currentPage: 1,
         // 当前每页显示多少条数据
-        pageSize: 10
+        pageSize: 5
       },
       // 所有角色列表
       rolesList: [],
@@ -142,38 +174,27 @@ export default {
       editDialogVisible: false,
       // 添加用户的表单数据
       addForm:{
-        username: '',
+        userName: '',
         password: '',
-        email: '',
-        mobile: ''
+        userPhoneNumber: ''
       },
       // 通过id获取的数据存入
       editForm: {},
       // 表单验证规则
       addFormRules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 3, max: 10, message: '用户名的长度在 3 到 10 个字符', trigger: 'blur' }
+        userName: [
+          { required: true, validator: validateName, trigger: 'blur' },
         ],
         password: [
-          { required: true, message: '请输入密码', trigger: 'blur' },
-          { min: 6, max: 15, message: '密码的长度在 6 到 15 个字符', trigger: 'blur' }
+          { required: true, validator: validatePass, trigger: 'blur' },
         ],
-        email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' },
-          {validator: checkEmail, trigger: 'blur'}
-        ],
-        mobile: [
+        userPhoneNumber: [
           { required: true, message: '请输入电话号码', trigger: 'blur' },
-          {validator: checkMobile, trigger: 'blur'}
+          { validator: checkMobile, trigger: 'blur'}
         ],
       },
       editFormRules: {
-        email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' },
-          {validator: checkEmail, trigger: 'blur'}
-        ],
-        mobile: [
+        userPhoneNumber: [
           { required: true, message: '请输入电话号码', trigger: 'blur' },
           {validator: checkMobile, trigger: 'blur'}
         ],
@@ -186,11 +207,10 @@ export default {
   },
   methods:{
     async getUserList() {
-      const { data: res } = await this.$http.post('user/getList', { ...this.queryInfo })
+      const { data: res } = await this.$http.post('admin/user/getList', { ...this.queryInfo })
       if (res.code !== 200) return this.$message.error('获取用户列表失败！')
-    //   this.userlist = res.data.users
-    //   this.total = res.data.total
-      console.log(res)
+      this.userlist = res.list;
+      this.total = res.total;
     },
     currentChange(val) {
         this.queryInfo.currentPage = val;
@@ -206,8 +226,8 @@ export default {
         // console.log(valid)
         // 发起用户的网络请求
         if (!valid) return
-        const {data: res} = await this.$http.post('users', this.addForm)
-        if(res.meta.status !== 201) 
+        const {data: res} = await this.$http.post('default/user/register', this.addForm)
+        if(res.code !== '001') 
         {
           return this.$message.error('添加用户失败！')
         }

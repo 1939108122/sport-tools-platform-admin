@@ -7,7 +7,7 @@ import './assets/css/global.css'
 import './assets/fonts/iconfont.css'
 
 import axios from 'axios';
-axios.defaults.baseURL='http://127.0.0.1:7001/admin/'
+axios.defaults.baseURL='http://127.0.0.1:7001/'
 
 // 为请求创建一个axios拦截器，为请求头加上Authorization属性，使他能够访问需要权限的接口
 axios.interceptors.request.use(config=>{

@@ -61,7 +61,7 @@ export default {
         // })
 
         //await aysnc用来简化promise对象
-        const res = await this.$http.post("user/login", this.loginForm);
+        const res = await this.$http.post("admin/user/login", this.loginForm);
         if (res.data.code == 200) {
           // 当登录成功后，浏览器会分配一个token唯一标识来标识这个用户。我们需要把这个token保存到session中用来标识用户
           window.sessionStorage.setItem("token", res.data.token);
