@@ -29,10 +29,10 @@
       <el-table-column label="操作" width="180px">
         <template slot-scope="scope">
           <!-- 修改按钮 -->
-          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.userId)"></el-button>
           <!-- 删除按钮 -->
           <el-button type="danger" icon="el-icon-delete" size="mini"
-          @click="removeUserById(scope.row.id)"></el-button>
+          @click="removeUserById(scope.row.userId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -47,7 +47,7 @@
     </el-card>
     <!-- 添加用户的对话框 -->
     <el-dialog
-      title="提示"
+      title="添加用户"
       :visible.sync="addDialogVisible"
       width="50%" @close="addDialogClosed">
       <!-- 内容主体区域 -->
@@ -240,13 +240,14 @@ export default {
     },
     // 展示修改用户信息对话框
     async showEditDialog(id) {
-      // console.log(id)
-      const {data: res} = await this.$http.get('users/'+ id)
-      if(res.meta.status !== 200) 
+      const {data: res} = await this.$http.post('admin/user/findUser', {
+          id: id
+      })
+      if(res.code !== 200) 
       {
         return this.$message.error('查询用户信息失败！')
       }
-      this.editForm = res.data
+      this.editForm = res.list[0]
       this.editDialogVisible = true
     },
     // 修改表单的重置操作
@@ -289,8 +290,8 @@ export default {
         return this.$message.info('已取消删除')
       }
       // 如果用户确认删除，confirmResult为字符串 'confirm'
-      const {data: res} = await this.$http.delete('users/'+ id)
-      if (res.meta.status !== 200)
+      const {data: res} = await this.$http.post('admin/user/delUser/'+ id)
+      if (res.code !== 200)
       {
         return this.$message.error('删除用户失败！')
       }
