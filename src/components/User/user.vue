@@ -9,7 +9,7 @@
   <!-- 卡片区域 -->
   <el-card>
     <!-- 搜索与添加区域 -->
-    <el-row :gutter="20">
+    <el-row :gutter="20" style="margin-bottom: 20px">
       <el-col :span="8">
         <el-input placeholder="请输入内容" class="input-with-select"
          v-model="queryInfo.search" clearable @clear="getUserList">
@@ -22,7 +22,7 @@
       </el-col>
     </el-row>
     <!-- 用户列表区域 -->
-    <el-table :data="userlist" stripe border>
+    <el-table :data="userlist" stripe border style="margin-bottom: 20px">
       <el-table-column prop="userName" label="姓名"></el-table-column>
       <el-table-column prop="password" label="密码"></el-table-column>
       <el-table-column prop="userPhoneNumber" label="电话"></el-table-column>
@@ -78,17 +78,17 @@
       <el-form ref="editFormRef" :model="editForm" 
       :rules="editFormRules" label-width="70px">
         <el-form-item label="用户名">
-        <el-input v-model="editForm.username" disabled></el-input>
+        <el-input v-model="editForm.userName" disabled></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-        <el-input v-model="editForm.email"></el-input>
+        <el-input v-model="editForm.password"></el-input>
         </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-        <el-input v-model="editForm.mobile"></el-input>
+        <el-form-item label="手机" prop="userPhoneNumber">
+        <el-input v-model="editForm.userPhoneNumber"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button @click="cancelEdit">取 消</el-button>
         <el-button type="primary" @click="editUserInfo">确 定</el-button>
       </span>
     </el-dialog>
@@ -196,7 +196,10 @@ export default {
       editFormRules: {
         userPhoneNumber: [
           { required: true, message: '请输入电话号码', trigger: 'blur' },
-          {validator: checkMobile, trigger: 'blur'}
+          { validator: checkMobile, trigger: 'blur'}
+        ],
+        password: [
+          { required: true, validator: validatePass, trigger: 'blur' },
         ],
       }
 
@@ -259,10 +262,12 @@ export default {
       this.$refs.editFormRef.validate( async valid => {
         if (!valid) return
         // 发起请求
-        const { data: res } = await this.$http.put('users/' + this.editForm.id, 
-        {email: this.editForm.email, 
-        mobile: this.editForm.mobile})
-        if (res.meta.status !== 200)
+        const { data: res } = await this.$http.post('admin/user/updateUser', {
+            userId: this.editForm.userId,
+            password: this.editForm.password,
+            userPhoneNumber: this.editForm.userPhoneNumber
+        })
+        if (res.code !== 200)
         {
           return this.$message.error('更新用户信息失败')
         }
@@ -299,6 +304,11 @@ export default {
       // 刷新用户列表
       this.getUserList()
     },
+    // 修改用户信息取消按钮
+    cancelEdit() {
+        this.editForm = {};
+        this.editDialogVisible = false;
+    }
     }
 }
 </script>
