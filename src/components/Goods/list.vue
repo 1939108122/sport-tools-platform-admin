@@ -11,7 +11,7 @@
       <el-row :gutter="20" style="margin-bottom: 20px">
         <el-col :span="8">
           <!-- 查询商品文本框 -->
-            <el-input placeholder="请输入内容" v-model="queryInfo.search" clearable @clear="searchByCondition()">
+            <el-input placeholder="请输入内容(以商品名称为准)" v-model="queryInfo.search" clearable @clear="searchByCondition()">
               <el-button slot="append" icon="el-icon-search" @click="searchByCondition()"></el-button>
             </el-input>
         </el-col>
